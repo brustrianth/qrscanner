@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="EscanerSC500.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ServiceURL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://localhost:1028/ScanQR</Value>
+    </Setting>
+    <Setting Name="ClienteAttr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">id_cliente</Value>
+    </Setting>
+    <Setting Name="SucursalAttr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">id_sucursal</Value>
+    </Setting>
+    <Setting Name="Sucursal" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="ProductID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1701</Value>
+    </Setting>
+    <Setting Name="VendorID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">05E0</Value>
+    </Setting>
+    <Setting Name="SucursalArray" Type="System.Collections.Generic.List&lt;string&gt;" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SucursalIDArray" Type="System.Collections.Generic.List&lt;int&gt;" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DeviceID" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1_1</Value>
+    </Setting>
+    <Setting Name="DeviceAttr" Type="System.String" Scope="User">
+      <Value Profile="(Default)">id_device</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
