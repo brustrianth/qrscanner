@@ -1,3 +1,4 @@
+using EscanerSC500.Properties;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
+using System.Windows.Automation;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -17,6 +19,7 @@ namespace EscanerSC500
         SerialPort serial;
         string portname;
         string dataIN;
+        Process pc;
 
         public Form1()
         {
@@ -135,12 +138,13 @@ namespace EscanerSC500
 
         private void btnConectar_Click(object sender, EventArgs e)
         {
-            if (serial != null)
+            /*if (serial != null)
             {
                 serial.Dispose();
                 portname = "";
             }
-            TryConnectSerial();
+            TryConnectSerial();*/
+            OpenURLInWindow("0");
         }
 
         void TryConnectSerial()
@@ -275,8 +279,51 @@ namespace EscanerSC500
             }
         }
 
+        delegate bool EnumThreadDelegate(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        static extern bool EnumThreadWindows(int dwThreadId, EnumThreadDelegate lpfn,
+            IntPtr lParam);
+
         void OpenURLInWindow(string id_param)
         {
+
+            /*if(pc != null && !pc.HasExited)
+            {
+                pc.CloseMainWindow();
+                pc.Close();
+                //pc.Kill();
+            }*/
+
+            // AGREGAR FUNCIÓN THROTTLE PARA CUANDO ESCANEA MUY RÁPIDO (MÁS DE UNA VEZ EN POCO TIEMPO)
+            // AGREGAR PROPERTY SETTINGS PARA HACER VALIDACIÓN DE PROCESOS CHROME Y THREADS, SI NO SE ACTIVA ESTA OPCIÓN SE CONSERVA EL IF DE PROCESS KILL CUANDO LA ÚNICA VENTANA/TAB DE CHROME
+
+            foreach (Process process in Process.GetProcessesByName("chrome"))
+            {
+                if (process.MainWindowHandle == IntPtr.Zero) // some have no UI
+                    continue;
+
+                foreach (ProcessThread thread in Process.GetProcessById(process.Id).Threads)
+                {
+                    EnumThreadWindows(thread.Id,
+                        (hWnd, lParam) => {
+                            AutomationElement element = AutomationElement.FromHandle(hWnd);
+                            try
+                            {
+                                Debug.WriteLine("CURRNAME: " + element.Current.Name);
+                                if (element.Current.Name.Contains("SCANQR"))
+                                {
+                                    ((WindowPattern)element.GetCurrentPattern(WindowPattern.Pattern)).Close();
+                                }
+                            }
+                            catch(ElementNotAvailableException ex)
+                            {
+                                Debug.WriteLine("Todas las instancias de Chrome cerradas");
+                            }
+                            return true;
+                        }, IntPtr.Zero);
+                }
+            }
 
             string base_url = Properties.Settings.Default.ServiceURL;
             string id_cliente_attr = Properties.Settings.Default.ClienteAttr;
@@ -287,10 +334,10 @@ namespace EscanerSC500
             string id_device = Properties.Settings.Default.DeviceID;
 
             string url = base_url + "?" + id_cliente_attr + "=" + id_param + "&" + id_sucursal_attr + "=" + id_sucursal_selected + "&" + id_device_attr + "=" + id_device;
-            Debug.WriteLine(url);
+
             try
             {
-                Process.Start(url);
+                pc = Process.Start(url);
             }
             catch
             {
@@ -298,15 +345,16 @@ namespace EscanerSC500
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     //url = url.Replace("&", "^&");
-                    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                    pc = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true, FileName = "chrome", Arguments = url + " --new-window --window-name=\"SCANQR\"" });
+                    Debug.WriteLine("PC ID: " + pc.Id.ToString());
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    Process.Start("xdg-open", url);
+                    pc = Process.Start("xdg-open", url);
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    Process.Start("open", url);
+                    pc = Process.Start("open", url);
                 }
                 else
                 {
