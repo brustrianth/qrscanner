@@ -140,5 +140,17 @@ namespace EscanerSC500.Properties {
                 this["DeviceAttr"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CloseChromeProcess {
+            get {
+                return ((bool)(this["CloseChromeProcess"]));
+            }
+            set {
+                this["CloseChromeProcess"] = value;
+            }
+        }
     }
 }

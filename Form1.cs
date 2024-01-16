@@ -38,6 +38,7 @@ namespace EscanerSC500
             /**** Tab (Dispositivo) ****/
             productIdTextbox.Text = Properties.Settings.Default.ProductID;
             vendorIdTextbox.Text = Properties.Settings.Default.VendorID;
+            chromeWindowsCheckbox.Checked = Properties.Settings.Default.CloseChromeProcess;
 
             /**** Tab (Sucursales) ****/
             List<string> sucursal_names = Properties.Settings.Default.SucursalArray ?? new List<string>();
@@ -138,13 +139,12 @@ namespace EscanerSC500
 
         private void btnConectar_Click(object sender, EventArgs e)
         {
-            /*if (serial != null)
+            if (serial != null)
             {
                 serial.Dispose();
                 portname = "";
             }
-            TryConnectSerial();*/
-            OpenURLInWindow("0");
+            TryConnectSerial();
         }
 
         void TryConnectSerial()
@@ -288,42 +288,48 @@ namespace EscanerSC500
         void OpenURLInWindow(string id_param)
         {
 
-            /*if(pc != null && !pc.HasExited)
+            bool closeChromeProcess = Properties.Settings.Default.CloseChromeProcess;
+
+            if (closeChromeProcess)
             {
-                pc.CloseMainWindow();
-                pc.Close();
-                //pc.Kill();
-            }*/
-
-            // AGREGAR FUNCIÓN THROTTLE PARA CUANDO ESCANEA MUY RÁPIDO (MÁS DE UNA VEZ EN POCO TIEMPO)
-            // AGREGAR PROPERTY SETTINGS PARA HACER VALIDACIÓN DE PROCESOS CHROME Y THREADS, SI NO SE ACTIVA ESTA OPCIÓN SE CONSERVA EL IF DE PROCESS KILL CUANDO LA ÚNICA VENTANA/TAB DE CHROME
-
-            foreach (Process process in Process.GetProcessesByName("chrome"))
-            {
-                if (process.MainWindowHandle == IntPtr.Zero) // some have no UI
-                    continue;
-
-                foreach (ProcessThread thread in Process.GetProcessById(process.Id).Threads)
+                foreach (Process process in Process.GetProcessesByName("chrome"))
                 {
-                    EnumThreadWindows(thread.Id,
-                        (hWnd, lParam) => {
-                            AutomationElement element = AutomationElement.FromHandle(hWnd);
-                            try
+                    if (process.MainWindowHandle == IntPtr.Zero) // some have no UI
+                        continue;
+
+                    foreach (ProcessThread thread in Process.GetProcessById(process.Id).Threads)
+                    {
+                        EnumThreadWindows(thread.Id,
+                            (hWnd, lParam) =>
                             {
-                                Debug.WriteLine("CURRNAME: " + element.Current.Name);
-                                if (element.Current.Name.Contains("SCANQR"))
+                                AutomationElement element = AutomationElement.FromHandle(hWnd);
+                                try
                                 {
-                                    ((WindowPattern)element.GetCurrentPattern(WindowPattern.Pattern)).Close();
+                                    Debug.WriteLine("CURRNAME: " + element.Current.Name);
+                                    if (element.Current.Name.Contains("TH_SCANQR"))
+                                    {
+                                        ((WindowPattern)element.GetCurrentPattern(WindowPattern.Pattern)).Close();
+                                    }
                                 }
-                            }
-                            catch(ElementNotAvailableException ex)
-                            {
-                                Debug.WriteLine("Todas las instancias de Chrome cerradas");
-                            }
-                            return true;
-                        }, IntPtr.Zero);
+                                catch (ElementNotAvailableException ex)
+                                {
+                                    Debug.WriteLine("Todas las instancias de Chrome cerradas");
+                                }
+                                return true;
+                            }, IntPtr.Zero);
+                    }
                 }
             }
+            else
+            {
+                if(pc != null && !pc.HasExited)
+                {
+                    pc.CloseMainWindow();
+                    pc.Close();
+                }
+            }
+
+            // AGREGAR FUNCIÓN THROTTLE PARA CUANDO ESCANEA MUY RÁPIDO (MÁS DE UNA VEZ EN POCO TIEMPO) (FEATURE)
 
             string base_url = Properties.Settings.Default.ServiceURL;
             string id_cliente_attr = Properties.Settings.Default.ClienteAttr;
@@ -345,8 +351,7 @@ namespace EscanerSC500
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     //url = url.Replace("&", "^&");
-                    pc = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true, FileName = "chrome", Arguments = url + " --new-window --window-name=\"SCANQR\"" });
-                    Debug.WriteLine("PC ID: " + pc.Id.ToString());
+                    pc = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true, FileName = "chrome", Arguments = url + " --new-window --window-name=\"TH_SCANQR\"" });
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
@@ -586,6 +591,12 @@ namespace EscanerSC500
         {
             Visible = false;
             WindowState = FormWindowState.Minimized;
+        }
+
+        private void chromeWindowsCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CloseChromeProcess = chromeWindowsCheckbox.Checked;
+            Properties.Settings.Default.Save();
         }
     }
 }

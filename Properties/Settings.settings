@@ -32,5 +32,8 @@
     <Setting Name="DeviceAttr" Type="System.String" Scope="User">
       <Value Profile="(Default)">id_device</Value>
     </Setting>
+    <Setting Name="CloseChromeProcess" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

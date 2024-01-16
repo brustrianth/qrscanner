@@ -45,6 +45,7 @@
             sucursalSelect = new ComboBox();
             label4 = new Label();
             tabPage2 = new TabPage();
+            chromeWindowsCheckbox = new CheckBox();
             serialTextbox = new TextBox();
             vendorIdTextbox = new TextBox();
             productIdTextbox = new TextBox();
@@ -224,6 +225,7 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(chromeWindowsCheckbox);
             tabPage2.Controls.Add(serialTextbox);
             tabPage2.Controls.Add(vendorIdTextbox);
             tabPage2.Controls.Add(productIdTextbox);
@@ -239,6 +241,17 @@
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Dispositivo";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // chromeWindowsCheckbox
+            // 
+            chromeWindowsCheckbox.AutoSize = true;
+            chromeWindowsCheckbox.Location = new Point(9, 137);
+            chromeWindowsCheckbox.Name = "chromeWindowsCheckbox";
+            chromeWindowsCheckbox.Size = new Size(205, 19);
+            chromeWindowsCheckbox.TabIndex = 17;
+            chromeWindowsCheckbox.Text = "Cerrar ventanas Chrome (Process)";
+            chromeWindowsCheckbox.UseVisualStyleBackColor = true;
+            chromeWindowsCheckbox.CheckedChanged += chromeWindowsCheckbox_CheckedChanged;
             // 
             // serialTextbox
             // 
@@ -512,5 +525,6 @@
         private Label label14;
         private TextBox deviceAttrTextbox;
         private Label label13;
+        private CheckBox chromeWindowsCheckbox;
     }
 }
